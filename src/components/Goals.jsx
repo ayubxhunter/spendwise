@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Personalplan from './Personalplan'; // Import the Personalplan component
 
 const Goals = () => {
   const [inputs, setInputs] = useState(() => {
-    // Trys to get data from local storage, if available
     const savedInputs = localStorage.getItem('userInputs');
     return savedInputs
       ? JSON.parse(savedInputs)
@@ -16,17 +17,15 @@ const Goals = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
 
   const validateInputs = () => {
     const newErrors = {};
-
-    // Validate monthlyIncome as a number (integer or float)
     const income = parseFloat(inputs.monthlyIncome);
     if (isNaN(income) || !Number.isFinite(income)) {
       newErrors.monthlyIncome = 'Please enter a valid number for monthly income.';
     }
 
-    // Validate paysForHousing, paysForInsurance, paysForTransportation, paysForUtilities as "Yes" or "No"
     const yesNoOptions = ['Yes', 'No'];
     const fieldsToValidate = [
       'paysForHousing',
@@ -37,16 +36,14 @@ const Goals = () => {
 
     fieldsToValidate.forEach((field) => {
       if (!yesNoOptions.includes(inputs[field])) {
-        newErrors[field] = 'Please enter either "Yes" or "No".';
+        newErrors[field] = `Please enter either "Yes" or "No".`;
       }
     });
 
     setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0; // Returns true if there are no errors
+    return Object.keys(newErrors).length === 0;
   };
 
-  // Handle input changes
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setInputs((prevInputs) => ({
@@ -55,28 +52,22 @@ const Goals = () => {
     }));
   };
 
-  // Save data to local storage whenever inputs change
   useEffect(() => {
     localStorage.setItem('userInputs', JSON.stringify(inputs));
   }, [inputs]);
 
-  // Handle form submission
   const handleSubmit = (event) => {
     event.preventDefault();
-  
-    // Validate inputs
     const isValid = validateInputs();
-  
     if (isValid) {
       console.log('Submitted Data:', inputs);
-      // Save the data to local storage
       localStorage.setItem('submittedData', JSON.stringify(inputs));
-      // Perform any additional actions upon submission
-      // For example, you can process the inputs here
+      navigate('/personalplan', { state: { userInputs: inputs } });
     } else {
       console.log('Form has errors. Please correct them.');
-    }
+    }    
   };
+  
 
   return (
     <div className="p-8">
@@ -84,7 +75,7 @@ const Goals = () => {
       <form onSubmit={handleSubmit}>
         <table className="min-w-full divide-y divide-gray-200">
           <tbody className="bg-white divide-y divide-gray-200">
-            {/* Form fields */}
+            {/* Row for Monthly Income */}
             <tr>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                 What is your monthly income?
@@ -156,9 +147,7 @@ const Goals = () => {
                   onChange={handleInputChange}
                 />
                 {errors.paysForTransportation && (
-                  <div style={{ color: 'red' }}>
-                    {errors.paysForTransportation}
-                  </div>
+                  <div style={{ color: 'red' }}>{errors.paysForTransportation}</div>
                 )}
               </td>
             </tr>
@@ -197,5 +186,4 @@ const Goals = () => {
 };
 
 export default Goals;
-
 
